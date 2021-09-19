@@ -62,7 +62,7 @@ tasksel install samba-server
 
 #Security copy to smb config file
 	cp "${SMB_FOLDER}""${SMB}" "${SMB_FOLDER}""${SMB}.backup" 
-	bash -c "grep -v -E "^#|^;" /etc/samba/smb.conf_backup | grep . > /etc/samba/smb.conf"
+	bash -c "grep -v -E "^#|^;" /etc/samba/smb.conf.backup | grep . > /etc/samba/smb.conf"
 	
 	smbpasswd -a ${install_user}
 #Add config in smb.conf
