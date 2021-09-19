@@ -31,7 +31,7 @@ export DEBIAN_FRONTEND="noninteractive"
 	UPGRADE_PKG="${PKG_MANAGER} upgrade -y"
 	PKG_INSTALL=("${PKG_MANAGER}" -qq --no-install-recommends install)
 	PKG_COUNT="${PKG_MANAGER} -s -o Debug::NoLocking=true upgrade | grep -c ^Inst || true"
-	LAMP=(apache2 php mariadb-server php-mysql)
+	LAMP=(apache2 php mariadb-server php-mysql language-pack-gnome-pt language-pack-pt-base)
 	phpmyadmin=(phpmyadmin)
 	PKG_CACHE="/var/lib/apt/lists/"
 	ARGONONE='https://raw.githubusercontent.com/meuter/argon-one-case-ubuntu-20.04/master/argon1.sh'
@@ -62,7 +62,7 @@ tasksel install samba-server
 
 #Security copy to smb config file
 	cp "${SMB_FOLDER}""${SMB}" "${SMB_FOLDER}""${SMB}.backup" 
-	$ sudo bash -c 'grep -v -E "^#|^;" /etc/samba/smb.conf.backup | grep . > /etc/samba/smb.conf'
+	bash -c 'grep -v -E "^#|^;" /etc/samba/smb.conf.backup | grep . > /etc/samba/smb.conf'
 	
 	smbpasswd -a ${install_user}
 #Add config in smb.conf
@@ -323,6 +323,7 @@ main(){
 			printf "  %bError: Unable to restart service. Please try \"%s\"%b" "${COL_LIGHT_RED}" "sudo 'sudo service apache2 restart'" "${COL_NC}"
 			return 1
 		fi
+		dpkg-reconfigure -f noninteractive locales
 		install_dependent_packages "${phpmyadmin[@]}"
 		
 		chooseUser
@@ -330,6 +331,7 @@ main(){
 #Install Samba Server
 
 	smb_Server
+	
 }
 
 if [[ "${PH_TEST}" != true ]] ; then
