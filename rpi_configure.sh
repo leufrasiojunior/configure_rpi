@@ -2,8 +2,6 @@
 
 set -e
 
-# shellcheck disable=SC2086
-
 #This script install and configure LAMP um Raspberry PI.
 #Developed and tested only in Ubuntu 20.04.3 LTS (Focal Fossa).
 #Others distros are not has been test. Use in your risk.
@@ -41,8 +39,6 @@ CMD_TASKEL="tasksel install"
 SMB_FOLDER="/etc/samba/"
 SMB="smb.conf"
 
-
-
 #------------------#
 
 #Config Functions
@@ -74,6 +70,7 @@ echo 'browseable = yes' >> /etc/samba/smb.conf
 echo 'read only = no' >> /etc/samba/smb.conf
 echo 'writable = yes' >> /etc/samba/smb.conf	
 
+chown -R ${install_user}:${install_user} /var/www/html
 systemctl restart smbd
 
     local str="Restarting smb service..."
