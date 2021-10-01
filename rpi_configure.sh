@@ -84,6 +84,23 @@ systemctl restart smbd
         printf "  %bError: Unable to restart samba service. Please restart system"${COL_NC}""
         return 1
     fi
+    
+#Overclock Rpi4 Ubuntu
+UBUNTU=$(lsb_release -ds)
+	if ["$USUARIO" == "Ubuntu 20.04.3 LTS"]; then
+	str="Wait a minute... The system will be configured to overclock 2,0GHz".
+	sleep 3
+		echo "over_voltage=8" >> /boot/firmware/config.txt
+		echo "arm_freq=2147" >> /boot/firmware/config.txt
+		echo "gpu_freq=750" >> /boot/firmware/config.txt
+		printf "%b  %b %s\\n" "${OVER}" "${CROSS}" "${str}"
+	else
+		str="This system is not Ubuntu, or the version not Ubuntu 20.04.3 LTS. Skipping Overclock RPI."
+			# Otherwise, show an error and exit
+		printf "%b  %b %s\\n" "${OVER}" "${CROSS}" "${str}"
+		return 1
+	fi
+	
 
 }
 
@@ -328,6 +345,10 @@ main(){
 #Install Samba Server
 
 	smb_Server
+
+ printf "%b  %b Wait. Overclocked and system will restart in 5 seconds.\\n" "${OVER}"  "${TICK}"
+ sleep 5
+ reboot now
 	
 }
 
