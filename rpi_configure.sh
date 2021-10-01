@@ -308,16 +308,16 @@ main(){
         printf "      Please check the installer for any concerns regarding this requirement\\n"
         printf "      Make sure to download this script from a trusted source\\n\\n"
         printf "  %b Sudo utility check" "${INFO}"
-		exit 1
+		#exit 1
         # If the sudo command exists, try rerunning as admin
         if is_command sudo ; then
             printf "%b  %b Sudo utility check\\n" "${OVER}"  "${TICK}"
 		else
             printf "%b  %b Sudo utility check\\n" "${OVER}" "${CROSS}"
             printf "  %b Sudo is needed to install\\n\\n" "${INFO}"
-            printf "  %b %bPlease re-run this installer as root${COL_NC}\\n" "${INFO}" "${COL_LIGHT_RED}"
-            exit 1
-			exit 1
+            sudo ./"$0"
+            #exit 1
+			#exit 1
 		fi
 	fi
 	
