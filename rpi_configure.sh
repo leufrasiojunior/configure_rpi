@@ -77,11 +77,11 @@ systemctl restart smbd
     printf "  %b %s..." "${INFO}" "${str}"
     # Create a command from the package cache variable
     if systemctl restart smbd &> /dev/null; then
-        printf "%b  %b %s\\n" "${OVER}" "${TICK}" "${str}"
+        printf "%b  %b %s\\n" "${OVER}" "${TICK}" "${str}\n"
     else
         # Otherwise, show an error and exit
         printf "%b  %b %s\\n" "${OVER}" "${CROSS}" "${str}"
-        printf "  %bError: Unable to restart samba service. Please restart system"${COL_NC}""
+        printf "%b  %b %s\\n" "  %bError: Unable to restart samba service. Please restart system"${COL_NC}""
         return 1
     fi
     
@@ -89,11 +89,12 @@ systemctl restart smbd
 UBUNTU=$(lsb_release -ds)
 	if ["$USUARIO" == "Ubuntu 20.04.3 LTS"]; then
 	str="Wait a minute... The system will be configured to overclock 2,0GHz".
-	sleep 3
+	
 		echo "over_voltage=8" >> /boot/firmware/config.txt
 		echo "arm_freq=2147" >> /boot/firmware/config.txt
 		echo "gpu_freq=750" >> /boot/firmware/config.txt
 		printf "%b  %b %s\\n" "${OVER}" "${CROSS}" "${str}"
+		sleep 3
 	else
 		str="This system is not Ubuntu, or the version not Ubuntu 20.04.3 LTS. Skipping Overclock RPI."
 			# Otherwise, show an error and exit
@@ -122,7 +123,7 @@ install_dependent_packages() {
             if dpkg-query -W -f='${Status}' "${i}" 2>/dev/null | grep "ok installed" &> /dev/null; then
                 printf "%b  %b Checking for %s\\n" "${OVER}" "${TICK}" "${i}"
             else
-                printf "%b  %b Checking for %s (will be installed)\\n" "${OVER}" "${INFO}" "${i}"
+                printf "%b  %b Checking for %s\\n (will be installed)\\n" "${OVER}" "${INFO}" "${i}"
                 installArray+=("${i}")
             fi
         done
@@ -188,7 +189,7 @@ notify_package_updates_available() {
     updatesToInstall=$(eval "${PKG_COUNT}")
 
         if [[ "${updatesToInstall}" -eq 0 ]]; then
-            printf "%b  %b %s... up to date!\\n\\n" "${OVER}" "${TICK}" "${str}"
+            printf %s\\n "%b  %b %s... up to date!\\n\\n" "${OVER}" "${TICK}" "${str}"
         else
 			
 		if eval "${UPGRADE_PKG}"; then
@@ -197,7 +198,7 @@ notify_package_updates_available() {
 		else
 			# Otherwise, show an error and exit
 			printf "%b  %b %s\\n" "${OVER}" "${CROSS}" "${str}"
-			printf "  %bError: Unable to update package cache. Please try \"%s\"%b" "${COL_LIGHT_RED}" "sudo ${UPDATE_PKG_CACHE}" "${COL_NC}"
+			printf "  %s\\n %bError: Unable to update package cache. Please try \"%s\"%b" "${COL_LIGHT_RED}" "sudo ${UPDATE_PKG_CACHE}" "${COL_NC}"
 			return 1
 		fi
 
@@ -263,18 +264,18 @@ chooseUser(){
 		if [ -z "$install_user" ]; then
 			if [ "$(awk -F':' 'BEGIN {count=0} $3>=1000 && $3<=60000 { count++ } END{ print count }' /etc/passwd)" -eq 1 ]; then
 				install_user="$(awk -F':' '$3>=1000 && $3<=60000 {print $1}' /etc/passwd)"
-				echo "::: No user specified, but only ${install_user} is available, using it"
+				printf "  %b %s..." "${INFO}" "No user specified, but only ${install_user} is available, using it"
 			else
-				echo "::: No user specified"
+				printf "  %b %s..." "${INFO}" " No user specified... Exiting the installer."
 				exit 1
 			fi
 		else
 			if awk -F':' '$3>=1000 && $3<=60000 {print $1}' /etc/passwd | grep -qw "${install_user}"; then
-				echo "::: ${install_user} will hold your ovpn configurations."
+				printf "  %b %s..." "${INFO}" "${install_user} will be used to install ArgonOne Script"
 			else
-				echo "::: User ${install_user} does not exist, creating..."
+				printf "  %b %s..." "${INFO}" "User ${install_user} does not exist, creating..."
 				useradd -m -s /bin/bash "${install_user}"
-				echo "::: User created without a password, please do sudo passwd $install_user to create one"
+				printf "  %b %s..." "${INFO}" "User created without a password, please do sudo passwd $install_user to create one"
 			fi
 		fi
 }
