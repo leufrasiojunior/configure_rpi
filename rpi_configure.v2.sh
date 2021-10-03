@@ -144,6 +144,7 @@ install_br(){
     locale-gen pt_BR.UTF-8
     echo 'export LANG=pt_BR.UTF-8' >> ~/.bashrc
     dpkg-reconfigure -f noninteractive locales
+    echo 'export LANG=pt_BR.UTF-8' >> ~/.bashrc
 }
 
 notify_package_updates_available() {
@@ -243,29 +244,29 @@ argononed_conf(){
     touch $daemonconfigfile
     chmod 666 $daemonconfigfile
 (cat <<argononedconf
-    #
-    # Argon One Fan Configuration
-    #
-    # List below the temperature (Celsius) and fan speed (in percent) pairs
-    # Use the following form:
-    # min.temperature=speed
-    #
-    # Example:
-    # 55=10
-    # 60=55
-    # 65=100
-    #
-    # Above example sets the fan speed to
-    #
-    # NOTE: Lines begining with # are ignored
-    #
-    # Type the following at the command line for changes to take effect:
-    # sudo systemctl restart '$daemonname'.service
-    #
-    # Start below:
-    55=10
-    60=55
-    65=100
+#
+# Argon One Fan Configuration
+#
+# List below the temperature (Celsius) and fan speed (in percent) pairs
+# Use the following form:
+# min.temperature=speed
+#
+# Example:
+# 55=10
+# 60=55
+# 65=100
+#
+# Above example sets the fan speed to
+#
+# NOTE: Lines begining with # are ignored
+#
+# Type the following at the command line for changes to take effect:
+# sudo systemctl restart '$daemonname'.service
+#
+# Start below:
+55=10
+60=55
+65=100
 argononedconf
 ) >> /etc/$daemonname.conf
 }
@@ -326,8 +327,6 @@ GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 shutdown_pin=4
 GPIO.setup(shutdown_pin, GPIO.IN,  pull_up_down=GPIO.PUD_DOWN)
-
-#!/bin/bash
 
 def shutdown_check():
     while True:
@@ -459,7 +458,7 @@ chmod 644 $daemonfanservice
 
 
 removescript(){
-
+confirm=""
 argon_create_file $removescript
 
 (cat <<removescript
@@ -471,12 +470,12 @@ echo "-------------------------"
 echo -n "Press Y to continue:"
 read -n 1 confirm
 echo
-if [ "$confirm" = "y" ]
+if [ '$confirm' = "y" ]
 then
     confirm="Y"
 fi
 
-if [ "$confirm" != "Y" ]
+if [ '$confirm' != "Y" ]
 then
     echo "Cancelled"
     exit
@@ -755,7 +754,7 @@ tempmonscript(){
 
 
 argon_script(){
-    printf "-----------------------------------------------------"
+    echo "-----------------------------------------------------"
 local str="Configuring ArgonOne Case Script to Ubuntu"
     printf "  %b %s...\\n" "${INFO}" "${str}" 
     sleep 6
