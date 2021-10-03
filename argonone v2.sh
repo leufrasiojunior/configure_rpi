@@ -659,7 +659,7 @@ local str="Configuring ArgonOne Case Script to Ubuntu"
     printf "  %b %s...\\n" "${INFO}" "${str}" 
     sleep 6
     printf "  %b %s...\\n" "${INFO}" "Step 1 - Installing necessary dependencies"
-    install_dependent_packages "${PKGLISTS[@]}"
+    install_dependent_packages ${PKGLISTS[@]}
     
     printf "  %b %s...\\n" "${INFO}" "Step 2 - Generating $daemonconfigfile"
     argononed_conf
