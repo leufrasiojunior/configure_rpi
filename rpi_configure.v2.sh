@@ -390,24 +390,15 @@ def load_config(fname):
 
 def temp_check():
     fanconfig = ["65=100", "60=55", "55=10"]
-    tmpconfig = load_config("'$daemonconfigfile'")
+    tmpconfig = load_config("$daemonconfigfile")
     if len(tmpconfig) > 0:
         fanconfig = tmpconfig
     address=0x1a
     prevblock=0
     while True:
-
-
-# NOTE(cme): AFAIK vcgencmd is not available on ubuntu, so use sysfs instead
-#     temp = os.popen("vcgencmd measure_temp").readline()
-#     temp = temp.replace("temp=","")
-#     val = float(temp.replace("'"'"'C",""))
-
         with open("/sys/class/thermal/thermal_zone0/temp", "r") as fp:
             temp = fp.readline()
         val = float(int(temp)/1000)
-
-
         block = get_fanspeed(val, fanconfig)
         if block < prevblock:
             time.sleep(30)
@@ -439,7 +430,6 @@ daemonfanservice(){
 argon_create_file $daemonfanservice
 
 (cat <<daemonfanservice
-
 [Unit]
 Description=Argon One Fan and Button Service
 After=multi-user.target
@@ -462,7 +452,6 @@ confirm=""
 argon_create_file $removescript
 
 (cat <<removescript
-
 #!/usr/bin/env bash
 echo "-------------------------"
 echo "Argon One Uninstall Tool"
@@ -470,12 +459,12 @@ echo "-------------------------"
 echo -n "Press Y to continue:"
 read -n 1 confirm
 echo
-if [ '$confirm' = "y" ]
+if [ \$confirm = "y" ]
 then
     confirm="Y"
 fi
 
-if [ '$confirm' != "Y" ]
+if [ \$confirm != "Y" ]
 then
     echo "Cancelled"
     exit
@@ -684,7 +673,7 @@ fi
 chmod 755 $configscript
 
 configscript
-)
+) >> $configscript
 
 chmod 755 $configscript
 systemctl daemon-reload
