@@ -134,6 +134,20 @@ chooseUser(){
         fi
 }
 
+test_dpkg_lock() {
+        i=0
+        # fuser is a program to show which processes use the named files, sockets, or filesystems
+        # So while the lock is held,
+        while fuser /var/lib/dpkg/lock >/dev/null 2>&1
+        do
+            # we wait half a second,
+            sleep 0.5
+            # increase the iterator,
+            ((i=i+1))
+        done
+        # and then report success once dpkg is unlocked.
+        return 0
+}
 
 argononed_conf(){
 
