@@ -1,5 +1,72 @@
 #!/usr/bin/env bash
 
+#This script install and configure LAMP um Raspberry PI.
+#Developed and tested only in Ubuntu 20.04.3 LTS (Focal Fossa).
+#Others distros are not has been test. Use in your risk.
+# shellcheck disable=SC2034  # Unused variables left for readability
+# shellcheck disable=SC2183  
+# shellcheck disable=SC2154  
+
+set -e
+
+#Exporting DebconfNoninteractive resources 
+export DEBIAN_FRONTEND="noninteractive"
+
+#Script Configurations
+#Table collors
+    # Set these values so the installer can still run in color
+    COL_NC='\e[0m' # No Color
+    COL_LIGHT_GREEN='\e[1;32m'
+    COL_LIGHT_RED='\e[1;31m'
+    TICK="[${COL_LIGHT_GREEN}✓${COL_NC}]"
+    CROSS="[${COL_LIGHT_RED}✗${COL_NC}]"
+    INFO="[i]"
+    DONE="${COL_LIGHT_GREEN} done!${COL_NC}"
+    OVER="\\r\\033[K"
+
+##Variables
+    PKG_MANAGER="apt-get"
+    UPDATE_PKG_CACHE="${PKG_MANAGER} update"
+	UPGRADE_PKG="${PKG_MANAGER} upgrade -y"
+	PKG_INSTALL=("${PKG_MANAGER}" -qq --no-install-recommends install)
+	PKG_COUNT="${PKG_MANAGER} -s -o Debug::NoLocking=true upgrade | grep -c ^Inst || true"
+	LAMP=(apache2 php mariadb-server php-mysql language-pack-gnome-pt language-pack-pt-base)
+    PT_BR=(language-pack-gnome-pt language-pack-pt-base)
+	phpmyadmin=(phpmyadmin)
+	PKG_CACHE="/var/lib/apt/lists/"
+
+    #ArgonOne script variables
+    PKGLISTS=(python3-rpi.gpio python3-smbus)
+
+    daemonname="argononed"
+    powerbuttonscript=/usr/bin/$daemonname.py
+    shutdownscript="/lib/systemd/system-shutdown/$daemonname-poweroff.py"
+    daemonconfigfile=/etc/$daemonname.conf
+    configscript=/usr/bin/argonone-config
+    removescript=/usr/bin/argonone-uninstall
+    tempmonscript=/usr/bin/argonone-tempmon
+    daemonfanservice=/lib/systemd/system/$daemonname.service
+    ARGONONE='https://raw.githubusercontent.com/meuter/argon-one-case-ubuntu-20.04/master/argon1.sh'
+
+
+    ##Taskel Variables
+    TASKEL_INSTALL="samba-server"
+    CMD_TASKEL="tasksel install"
+    SMB_FOLDER="/etc/samba/"
+    SMB="smb.conf"
+
+#------------------#
+
+#Config Functions
+
+is_command() {
+    # Checks to see if the given command (passed as a string argument) exists on the system.
+    # The function returns 0 (success) if the command exists, and 1 if it doesn't.
+    local check_command="$1"
+
+    command -v "${check_command}" >/dev/null 2>&1
+}
+
 ################# START ARGON ONE CONFIG #################
 
 argon_create_file() {
