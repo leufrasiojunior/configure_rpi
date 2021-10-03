@@ -77,6 +77,63 @@ argon_create_file() {
     chmod 666 "$1"
 }
 
+install_dependent_packages() {
+
+    # Install packages passed in via argument array
+    # No spinner - conflicts with set -e
+    declare -a installArray
+
+    # Debian based package install - debconf will download the entire package list
+    # so we just create an array of packages not currently installed to cut down on the
+    # amount of download traffic.
+    # NOTE: We may be able to use this installArray in the future to create a list of package that were
+    # installed by us, and remove only the installed packages, and not the entire list.
+    if is_command apt-get ; then
+        # For each package, check if it's already installed (and if so, don't add it to the installArray)
+        for i in "$@"; do
+            printf "  %b Checking for %s..." "${INFO}" "${i}"
+            if dpkg-query -W -f='${Status}' "${i}" 2>/dev/null | grep "ok installed" &> /dev/null; then
+                printf "%b  %b Checking for %s\\n" "${OVER}" "${TICK}" "${i}"
+            else
+                printf "%b  %b Checking for %s\\n (will be installed)\\n" "${OVER}" "${INFO}" "${i}"
+                installArray+=("${i}")
+            fi
+        done
+        # If there's anything to install, install everything in the list.
+        if [[ "${#installArray[@]}" -gt 0 ]]; then
+            test_dpkg_lock
+            printf "  %b Processing %s install(s) for: %s, please wait...\\n" "${INFO}" "${PKG_MANAGER}" "${installArray[*]}"
+            printf '%*s\n' "$columns" '' | tr " " -;
+            "${PKG_INSTALL[@]}" "${installArray[@]}"
+            printf '%*s\n' "$columns" '' | tr " " -;
+            return
+        fi
+        printf "\\n"
+        return 0
+    fi
+}
+
+
+chooseUser(){
+        if [ -z "$install_user" ]; then
+            if [ "$(awk -F':' 'BEGIN {count=0} $3>=1000 && $3<=60000 { count++ } END{ print count }' /etc/passwd)" -eq 1 ]; then
+                install_user="$(awk -F':' '$3>=1000 && $3<=60000 {print $1}' /etc/passwd)"
+                printf "  %b %s..." "${INFO}" "No user specified, but only ${install_user} is available, using it"
+            else
+                printf "  %b %s..." "${INFO}" " No user specified... Exiting the installer."
+                exit 1
+            fi
+        else
+            if awk -F':' '$3>=1000 && $3<=60000 {print $1}' /etc/passwd | grep -qw "${install_user}"; then
+                printf "  %b %s..." "${INFO}" "${install_user} will be used to install ArgonOne Script"
+            else
+                printf "  %b %s..." "${INFO}" "User ${install_user} does not exist, creating..."
+                useradd -m -s /bin/bash "${install_user}"
+                printf "  %b %s..." "${INFO}" "User created without a password, please do sudo passwd $install_user to create one"
+            fi
+        fi
+}
+
 
 argononed_conf(){
 
@@ -595,6 +652,8 @@ tempmonscript(){
 
 
 argon_script(){
+
+	chooseUser
     echo "-----------------------------------------------------"
 local str="Configuring ArgonOne Case Script to Ubuntu"
     printf "  %b %s...\\n" "${INFO}" "${str}" 
