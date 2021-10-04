@@ -154,7 +154,7 @@ install_br(){
     #Configure PT-BR language to system 
  local str="Configurar o idioma PT-BR no sistema."
     printf "%b  %b %s\\n" "${OVER}" "${TICK}" "${str}"
-    install_dependent_packages "${PT_BR[@]}"$!
+    install_dependent_packages "${PT_BR[@]}" &> /dev/null & spinner $!
     locale-gen pt_BR.UTF-8
     echo 'export LANG=pt_BR.UTF-8' >> ~/.bashrc
     dpkg-reconfigure -f noninteractive locales
@@ -171,13 +171,14 @@ notify_package_updates_available() {
         if [[ "${updatesToInstall}" -eq 0 ]]; then
                 printf %s\\n "%b  %b %s... up to date!\\n" "${OVER}" "${TICK}" "${str}"
             else
-            printf "  %b ${updatesToInstall} packages are be updated. Wait... Updating system. %s..." "${INFO}" "${i}"
+            printf "  %b ${updatesToInstall} packages can be upgraded. Wait update system. %s..." "${INFO}" "${i}"
             sleep 3
             if eval "${UPGRADE_PKG}" &> /dev/null & spinner $!; then
-            local str='Updating System.'
+            local str='System has ben updated.'
                 printf "%b  %b %s\\n" "${OVER}" "${TICK}" "${str}"
             else
                 # Otherwise, show an error and exit
+                local str='System not has ben updated.'
                 printf "%b  %b %s\\n" "${OVER}" "${CROSS}" "${str}"
                 printf "  %s\\n %bError: Unable to update package cache. Please try \"%s\"%b" "${COL_LIGHT_RED}" "sudo ${UPDATE_PKG_CACHE}" "${COL_NC}"
                 return 1
@@ -213,7 +214,7 @@ install_dependent_packages() {
             test_dpkg_lock
             printf "  %b Processing %s install(s) for: %s, please wait...\\n" "${INFO}" "${PKG_MANAGER}" "${installArray[*]}"
             printf '%*s\n' "$columns" '' | tr " " -;
-            "${PKG_INSTALL[@]}" "${installArray[@]} &> /dev/null & spinner $!"
+            "${PKG_INSTALL[@]}" "${installArray[@]}"
             printf '%*s\n' "$columns" '' | tr " " -;
             return
         fi
@@ -465,7 +466,7 @@ chmod 644 $daemonfanservice
 
 
 removescript(){
-confirm=""
+
 argon_create_file $removescript
 
 (cat <<removescript
@@ -512,7 +513,6 @@ chmod 755 $removescript
 }
 
 configscript(){
-
 argon_create_file $configscript
 (cat <<configscript
 #!/bin/bash
@@ -757,7 +757,7 @@ local str="Configuring ArgonOne Case Script to Ubuntu"
     printf "  %b %s...\\n" "${INFO}" "${str}" 
     sleep 6
     printf "  %b %s...\\n" "${INFO}" "Step 1 - Installing necessary dependencies"
-    install_dependent_packages "${PKGLISTS[@]}"
+    install_dependent_packages "${PKGLISTS[@]}" &> /dev/null & spinner $!
     
     printf "  %b %s...\\n" "${INFO}" "Step 2 - Generating $daemonconfigfile"
     argononed_conf
@@ -895,7 +895,7 @@ main(){
 
 
     #Install packages to configure LAMP Server
-    install_dependent_packages "${LAMP[@]}"
+    install_dependent_packages "${LAMP[@]}" &> /dev/null & spinner $!
     #Configure Mysql without frontend noninteractive. Conflicts with script.
     mysql_secure_installation
     #create Master Root phpmyadmin
@@ -911,7 +911,7 @@ main(){
             return 1
         fi
     #install Phpmyadmin
-    install_dependent_packages "${phpmyadmin[@]}"
+    install_dependent_packages "${phpmyadmin[@]}" &> /dev/null & spinner $!
 
     #Choose user to install ArgonOne script
     chooseUser
