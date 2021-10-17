@@ -903,7 +903,9 @@ main(){
     if [[ "${EUID}" -eq 0 ]]; then
         # they are root and all is good
         printf "  %b %s\\n" "${TICK}" "${str}"
-        install_br
+        if [ "$OS" == "Ubuntu 20.04.3 LTS" ]; then
+            install_br
+        fi
         update_package_cache || exit 1
         notify_package_updates_available
     else
@@ -965,5 +967,5 @@ main(){
 }
 
 if [[ "${PH_TEST}" != true ]] ; then
-    main "$@"  | tee -a /proc/$$/fd/3
+    main "$@"  | tee -a /var/log/$0.log
 fi
