@@ -876,6 +876,29 @@ OVER
     fi
 }
 
+over_raspi{
+local str="Wait a minute... The system will be configured to overclock 2,0GHz".
+    (cat <<OVER
+#[RPI4] Overclock
+over_voltage=8
+arm_freq=2147
+gpu_freq=750
+OVER
+) >> /boot/config.txt
+        printf "%b  %b %s\\n" "${OVER}" "${TICK}" "${str}"
+        sleep 3
+        printf "%b  %b %s\\n" "${OVER}" "${TICK}" "Overclocked Success! Your system will restart in 5 seconds."
+        sleep 5
+        shutdown -f -r now
+    else
+        str="This system is not Ubuntu, or the version not Ubuntu 20.04.3 LTS. Skipping Overclock RPI."
+            # Otherwise, show an error and exit
+        printf "%b  %b %s\\n" "${OVER}" "${CROSS}" "${str}"
+        return 1
+    fi
+
+}
+
 main(){
 ######## FIRST CHECK ########
     # Must be root to install
@@ -931,15 +954,15 @@ main(){
     argon_script
     fi
 
-
     #isntal and configure samba.
     smb_Server
 
     #Overclock Rpi4 Ubuntu
     over_rpi
 
-    if [ "$OS" == "Raspbian GNU/Linux 10 (buster)"]; then
+    if [ "$OS" == 'Raspbian GNU/Linux 10 (buster)' ]; then
         curl https://download.argon40.com/argon1.sh | bash 
+        over_raspi
     fi
 
     #Test do log installation
