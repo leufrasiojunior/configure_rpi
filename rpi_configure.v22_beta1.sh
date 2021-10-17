@@ -34,6 +34,7 @@ export DEBIAN_FRONTEND="noninteractive"
     PT_BR=(language-pack-gnome-pt language-pack-pt-base)
 	phpmyadmin=(phpmyadmin)
 	PKG_CACHE="/var/lib/apt/lists/"
+    OS=$(lsb_release -ds)
 
     #ArgonOne script variables
     PKGLISTS=(python3-rpi.gpio python3-smbus)
@@ -94,7 +95,7 @@ test_dpkg_lock() {
         i=0
         # fuser is a program to show which processes use the named files, sockets, or filesystems
         # So while the lock is held,
-        while fuser /var/lib/dpkg/lock >/dev/null & spinner $! 2>&1
+        while fuser /var/lib/dpkg/lock >/dev/null 2>&1
         do
             # we wait half a second,
             sleep 0.5
@@ -174,18 +175,20 @@ install_br(){
 notify_package_updates_available() {
     # Local, named variables
     local str="Checking ${PKG_MANAGER} for upgraded packages"
-    printf "\\n  %b %s..." "${INFO}" "${str}"
+    printf " %b %s\\n..." "${INFO}" "${str}"
     # Store the list of packages in a variable
     updatesToInstall=$(eval "${PKG_COUNT}")
 
         if [[ "${updatesToInstall}" -eq 0 ]]; then
                 printf %s\\n "%b  %b %s... up to date!\\n" "${OVER}" "${TICK}" "${str}"
             else
+                printf "%s\\n"
             printf "  %b ${updatesToInstall} packages can be upgraded. Wait update system. %s..." "${INFO}" "${i}"
             sleep 3
             if eval "${UPGRADE_PKG}"; then
             local str='System has ben updated.'
                 printf "%b  %b %s\\n" "${OVER}" "${TICK}" "${str}"
+                sleep 3
             else
                 # Otherwise, show an error and exit
                 local str='System not has ben updated.'
@@ -215,7 +218,7 @@ install_dependent_packages() {
             if dpkg-query -W -f='${Status}' "${i}" 2>/dev/null | grep "ok installed" &> /dev/null; then
                 printf "%b  %b Checking for %s\\n" "${OVER}" "${TICK}" "${i}"
             else
-                printf "%b  %b Checking for %s\\n (will be installed)\\n" "${OVER}" "${INFO}" "${i}"
+                printf "%b  %b Checking for %s (will be installed)\\n" "${OVER}" "${INFO}" "${i}"
                 installArray+=("${i}")
             fi
         done
@@ -850,8 +853,8 @@ chown -R "${install_user}":"${install_user}" /var/www/html
 
 over_rpi(){
 #Overclock Rpi4 Ubuntu
-UBUNTU=$(lsb_release -ds)
-    if [ "$UBUNTU" == "Ubuntu 20.04.3 LTS" ]; then
+OS=$(lsb_release -ds)
+    if [ "$OS" == "Ubuntu 20.04.3 LTS" ]; then
     str="Wait a minute... The system will be configured to overclock 2,0GHz".
 (cat <<OVER
 #[RPI4] Overclock
@@ -864,7 +867,7 @@ OVER
         sleep 3
         printf "%b  %b %s\\n" "${OVER}" "${TICK}" "Overclocked Success! Your system will restart in 5 seconds."
         sleep 5
-        shutdown -f -r
+        shutdown -f -r now
     else
         str="This system is not Ubuntu, or the version not Ubuntu 20.04.3 LTS. Skipping Overclock RPI."
             # Otherwise, show an error and exit
@@ -924,7 +927,10 @@ main(){
     #Choose user to install ArgonOne script
     chooseUser
     #Install Script
+    if [ "$OS" == "Ubuntu 20.04.3 LTS" ]; then
     argon_script
+    fi
+
 
     #isntal and configure samba.
     smb_Server
@@ -932,11 +938,15 @@ main(){
     #Overclock Rpi4 Ubuntu
     over_rpi
 
+    if [ "$OS" == "Raspbian GNU/Linux 10 (buster)"]; then
+        curl https://download.argon40.com/argon1.sh | bash 
+    fi
+
     #Test do log installation
     copy_to_install_log
 
 }
 
 if [[ "${PH_TEST}" != true ]] ; then
-    main "$@"  | tee -a /proc/$$/fd/3 
+    main "$@"  | tee -a /proc/$$/fd/3
 fi
