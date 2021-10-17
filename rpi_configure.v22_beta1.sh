@@ -876,7 +876,7 @@ OVER
     fi
 }
 
-over_raspi{
+over_raspi(){
 local str="Wait a minute... The system will be configured to overclock 2,0GHz".
     (cat <<OVER
 #[RPI4] Overclock
