@@ -878,7 +878,7 @@ OVER
 
 over_raspi(){
 local str="Wait a minute... The system will be configured to overclock 2,0GHz".
-    (cat <<OVER
+(cat <<OVER
 #[RPI4] Overclock
 over_voltage=8
 arm_freq=2147
@@ -890,12 +890,6 @@ OVER
         printf "%b  %b %s\\n" "${OVER}" "${TICK}" "Overclocked Success! Your system will restart in 5 seconds."
         sleep 5
         shutdown -f -r now
-    else
-        str="This system is not Ubuntu, or the version not Ubuntu 20.04.3 LTS. Skipping Overclock RPI."
-            # Otherwise, show an error and exit
-        printf "%b  %b %s\\n" "${OVER}" "${CROSS}" "${str}"
-        return 1
-    fi
 
 }
 
